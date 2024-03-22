@@ -1,5 +1,5 @@
-#ifndef _WallFollower_H_
-#define _WallFollower_H_
+#ifndef _WALLFOLLOWER_H_
+#define _WALLFOLLOWER_H_
 
 #include <iostream>
 #include <ros/ros.h>
@@ -17,7 +17,8 @@ public:
     typedef std::shared_ptr<WallFollower> Ptr;
 
     WallFollower(ros::NodeHandle& nh, GridMap::Ptr& grid_map_ptr);
-    ~WallFollower();
+	~WallFollower(){}
+
 
 private:
     struct PtsEndFov {
@@ -26,6 +27,7 @@ private:
         double deltaY_, deltaZ_;        // width and height in metric unit
         double X_;                      // depth
         Eigen::Matrix3d R_turn_round_;
+        ros::Publisher pts_end_fov_pub_;// only for test
 
         /* data */
         int width_idx_, height_idx_;
@@ -36,7 +38,6 @@ private:
         typedef std::shared_ptr<PtsEndFov> Ptr;
 
         PtsEndFov(ros::NodeHandle& nh);
-        void ptsEndFovGeneration();
         void publicPtsEndFov();
     };
 
@@ -47,7 +48,6 @@ private:
         typedef std::shared_ptr<PlaneFitter> Ptr;
 
         PlaneFitter(ros::NodeHandle& nh);
-        Eigen::Vector3d planeFitting(std::vector<Eigen::Vector3d>& pts_end_body);
     };
 
     PtsEndFov::Ptr pts_end_fov_ptr_;
@@ -56,18 +56,14 @@ private:
     GridMap::Ptr grid_map_ptr_;
 
     ros::Timer vis_timer_, find_waypoint_timer_;
-    ros::Publisher pts_end_fov_pub_;
 
-    std::vector<Eigen::Vector3d> plantFitting();
+    void ptsEndFovGeneration();
+    Eigen::Vector3d planeFitting();
     bool findNextWayPoint();
     void visCallback(const ros::TimerEvent& /*event*/);
     void findWayPointCallback(const ros::TimerEvent& /*event*/);
 
 };
-
-WallFollower::~WallFollower()
-{
-}
 
 
 #endif

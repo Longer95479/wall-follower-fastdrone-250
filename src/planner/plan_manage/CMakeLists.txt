@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   path_searching
   bspline_opt
   traj_utils
+  wall_follower
   message_generation
   cv_bridge
 )
@@ -26,7 +27,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES ego_planner
- CATKIN_DEPENDS plan_env path_searching bspline_opt traj_utils 
+ CATKIN_DEPENDS plan_env path_searching bspline_opt traj_utils wall_follower
 #  DEPENDS system_lib
 )
 
