@@ -735,10 +735,10 @@ void GridMap::odomCallback(const nav_msgs::OdometryConstPtr &odom)
   md_.camera_pos_(1) = odom->pose.pose.position.y;
   md_.camera_pos_(2) = odom->pose.pose.position.z;
 
-  md_.camera_r_m_ = Eigen::Quaterniond(odom->pose.pose.orientation.w,
-                                       odom->pose.pose.orientation.x,
-                                       odom->pose.pose.orientation.y,
-                                       odom->pose.pose.orientation.z).toRotationMatrix();
+  // md_.camera_r_m_ = Eigen::Quaterniond(odom->pose.pose.orientation.w,
+  //                                      odom->pose.pose.orientation.x,
+  //                                      odom->pose.pose.orientation.y,
+  //                                      odom->pose.pose.orientation.z).toRotationMatrix();
 
   md_.has_odom_ = true;
 }
