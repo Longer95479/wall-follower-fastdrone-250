@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <cmath>
+#include <stdlib.h>     // for using rand()
+
 #include <ros/ros.h>
 #include <ros/console.h>
 #include <Eigen/Eigen>
@@ -46,21 +48,27 @@ private:
         struct Plane {
             Eigen::Vector3d v_, p_;
         };
-        
+
         /* param */
+        int iters_;
+        double sigma_;                       // margin of a point in the given plane
+        double p_;                           // posibilaty of picking 3 inliers
         bool occupied_pts_updated_;
         ros::Publisher occupied_pts_pub_;    // only for test
+        ros::Publisher plane_fitting_arrow_pub_;    // only for test
+        bool have_plane_;
 
         /* data */
         std::vector<Eigen::Vector3d> occupied_pts_;
+        Plane current_plane_, last_best_plane_;
 
         typedef std::shared_ptr<PlaneFitter> Ptr;
 
         PlaneFitter(ros::NodeHandle& nh);
         void publicOccupiedPts();
-
-    private:
-        Plane current_plane_, last_best_plane_;
+        void publicPlaneFittingArrow();
+        void solvePlane(std::vector<Eigen::Vector3d> &random_3pts);
+        inline double solveDistance(Eigen::Vector3d &pt, Plane &plane);
     };
 
     /* param */
@@ -70,20 +78,25 @@ private:
     GridMap::Ptr grid_map_ptr_;
 
     ros::Timer vis_timer_, find_waypoint_timer_;
-    ros::Subscriber odom_sub_;
+    ros::Subscriber odom_sub_, waypoint_sub_;
+    ros::Publisher waypoint_pub_;
 
-    bool have_odom_;
+    bool have_odom_, is_next_waypoint_initialized_;
+    double dist_from_wall_;
+    int have_plane_threshold_;
 
     /* data */
-    Eigen::Vector3d body_pos_;
+    Eigen::Vector3d body_pos_, next_way_point_;
     Eigen::Matrix3d body_r_m_;
 
     void ptsEndFovGeneration();
-    Eigen::Vector3d planeFitting();
+    PlaneFitter::Plane planeFitting();
     bool findNextWayPoint();
-    void visCallback(const ros::TimerEvent& /*event*/);
     void findWayPointCallback(const ros::TimerEvent& /*event*/);
+    void visCallback(const ros::TimerEvent& /*event*/);
     void odomCallback(const nav_msgs::OdometryConstPtr& odom);
+    void waypointCallback(const geometry_msgs::PoseStampedPtr &msg);
+    void publicWayPoint(Eigen::Vector3d waypoint);
 
 };
 
