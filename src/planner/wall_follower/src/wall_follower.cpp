@@ -8,26 +8,32 @@ template <typename T> int sgn(T val) {
 
 WallFollower::WallFollower(ros::NodeHandle& nh, GridMap::Ptr& grid_map_ptr)
 {
-    ROS_INFO("Wall follower init begin.");
+    nh.param("wall_follower/wall_follower_enable", wall_follower_enable_, false);
 
-    nh.param("wall_follower/dist_from_wall", dist_from_wall_, 0.5);
-    nh.param("wall_follower/have_plane_threshold", have_plane_threshold_, 20);
+    if (wall_follower_enable_ == true) {
+        ROS_INFO("Wall follower init begin.");
+        
+        nh.param("wall_follower/dist_from_wall", dist_from_wall_, 0.5);
+        nh.param("wall_follower/have_plane_threshold", have_plane_threshold_, 20);
+        nh.param("wall_follower/reach_waypoint_threshold", reach_waypoint_threshold_, 0.5);
+        nh.param("wall_follower/max_planned_waypoints_num", max_planned_waypoints_num_, 10);
 
-    grid_map_ptr_ = grid_map_ptr;
+        grid_map_ptr_ = grid_map_ptr;
 
-    pts_end_fov_ptr_.reset(new PtsEndFov(nh));
-    ptsEndFovGeneration();
-    plane_fitter_ptr_.reset(new PlaneFitter(nh));
+        pts_end_fov_ptr_.reset(new PtsEndFov(nh));
+        ptsEndFovGeneration();
+        plane_fitter_ptr_.reset(new PlaneFitter(nh));
 
-    odom_sub_ = nh.subscribe<nav_msgs::Odometry>("grid_map/odom", 10, &WallFollower::odomCallback, this);
-    have_odom_ = false;
-    is_next_waypoint_initialized_ = false;
+        odom_sub_ = nh.subscribe<nav_msgs::Odometry>("grid_map/odom", 10, &WallFollower::odomCallback, this);
+        have_odom_ = false;
+        is_next_waypoint_initialized_ = false;
 
-    waypoint_sub_ = nh.subscribe("/move_base_simple/goal", 1, &WallFollower::waypointCallback, this);
-    waypoint_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 10);
+        waypoint_sub_ = nh.subscribe("/move_base_simple/goal", 1, &WallFollower::waypointCallback, this);
+        waypoint_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 10);
 
-    find_waypoint_timer_ = nh.createTimer(ros::Duration(0.5), &WallFollower::findWayPointCallback, this);
-    vis_timer_ = nh.createTimer(ros::Duration(0.2), &WallFollower::visCallback, this);    
+        find_waypoint_timer_ = nh.createTimer(ros::Duration(0.5), &WallFollower::findWayPointCallback, this);
+        vis_timer_ = nh.createTimer(ros::Duration(0.2), &WallFollower::visCallback, this); 
+    }   
 }
 
 
@@ -45,10 +51,15 @@ void WallFollower::findWayPointCallback(const ros::TimerEvent& /*event*/)
         if (!is_next_waypoint_initialized_) {
             next_way_point_ = body_pos_;
             is_next_waypoint_initialized_ = true;
+            planned_waypoints_count_ = 1;
+            ros::Duration(2.0).sleep();
         }
         // std::cout << "MY_DEBUG: dist = " << (body_pos_-next_way_point_).norm() << std::endl;
-        if ((body_pos_-next_way_point_).norm() < 0.5) {
-            findNextWayPoint();
+        if (planned_waypoints_count_ < max_planned_waypoints_num_) {
+            if ((body_pos_-next_way_point_).norm() < reach_waypoint_threshold_) {
+                findNextWayPoint();
+                planned_waypoints_count_++;
+            }
         }
     }
 }

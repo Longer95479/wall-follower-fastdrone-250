@@ -271,42 +271,29 @@ void RandomMapGenerateCylinder() {
   _map_ok = true;
 }
 
-void longWallGenerate() {
+void longWallGenerate(Eigen::Vector3d &center, Eigen::Quaterniond &q, double width, double height, double step)
+{
   pcl::PointXYZ pt;
+  Eigen::Vector3d pt_eigen;
 
-  double delta_z = 0.05;
-  double delta_x = 0.05;
+  if (width < 0)
+    width = -width;
+  if (height < 0)
+    height = -height;
 
-  double y = -1.0;
-  for (double x = -10.0; x < 15.0; x += delta_x) {
-    for (double z = 0; z < 3.0; z += delta_z) {
-        pt.x = x;
-        pt.y = y;
-        pt.z = z;
+  for (double z = -height/2; z < height/2; z += step) {
+    for(double y = -width/2; y < width/2; y += step) {
+        pt_eigen(0) = 0;
+        pt_eigen(1) = y;
+        pt_eigen(2) = z;
+        pt_eigen = q.toRotationMatrix() * pt_eigen + center;
+
+        pt.x = pt_eigen(0);
+        pt.y = pt_eigen(1);
+        pt.z = pt_eigen(2);
         cloudMap.push_back(pt);
     }
   }
-
-
-}
-
-void longWallGenerate2() {
-  pcl::PointXYZ pt;
-
-  double delta_z = 0.05;
-  double delta_y = 0.05;
-
-  double x = 5.0;
-  for (double y = -10.0; y < 10.0; y += delta_y) {
-    for (double z = 0; z < 3.0; z += delta_z) {
-        pt.x = x;
-        pt.y = y;
-        pt.z = z;
-        cloudMap.push_back(pt);
-    }
-  }
-
-
 }
 
 void rcvOdometryCallbck(const nav_msgs::Odometry odom) {
@@ -422,8 +409,34 @@ int main(int argc, char** argv) {
 
   // RandomMapGenerate();
   // RandomMapGenerateCylinder();
-  longWallGenerate();
-  longWallGenerate2();
+
+  Eigen::Vector3d center;
+  Eigen::Quaterniond q;
+  double width, height, step;
+
+  center = Eigen::Vector3d(0.0, -4.0, 1.0);
+  q.w() = cos(M_PI/2.0/2.0);
+  q.vec() = sin(M_PI/2.0/2.0) * Eigen::Vector3d(0, 0, 1.0);
+  width = 20.0;
+  height = 2.0;
+  step = 0.1;
+  longWallGenerate(center, q, width, height, step);
+
+  center = Eigen::Vector3d(5.0, -4.0, 1.0);
+  q.w() = cos(0.0);
+  q.vec() = sin(0.0) * Eigen::Vector3d(0, 0, 1.0);
+  width = 2;
+  height = 2.0;
+  step = 0.1;
+  longWallGenerate(center, q, width, height, step);
+
+  center = Eigen::Vector3d(0.0, -4.0, 1.0);
+  q.w() = cos(-M_PI/4.0/2.0);
+  q.vec() = sin(-M_PI/4.0/2.0) * Eigen::Vector3d(0, 0, 1.0);
+  width = 2;
+  height = 2.0;
+  step = 0.1;
+  longWallGenerate(center, q, width, height, step);
 
   ros::Rate loop_rate(_sense_rate);
 

@@ -152,9 +152,27 @@
     <param name="prediction/lambda" value="1.0" type="double"/>
     <param name="prediction/predict_rate" value="1.0" type="double"/>
   
-  
-
-
   </node>
+
+  <!-- use wallfollower -->
+  <include file="$(find wall_follower)/launch/wallfollower_param.xml">
+      <!-- NOTE: This arg is to specsify the node in which wallfollower running. -->
+      <arg name="wall_follower_node_name" value="drone_$(arg drone_id)_ego_planner_node"/>
+      <!-- wall follower param -->
+      <arg name="wall_follower_enable" value="true"/>
+      <arg name="dist_from_wall" value="0.6"/>
+      <arg name="have_plane_threshold" value="20"/>
+      <arg name="reach_waypoint_threshold" value="0.5"/>
+      <arg name="max_planned_waypoints_num" value="5"/>
+      <!-- pts_fov_end param -->
+      <arg name="f" value="30.0"/>
+      <arg name="deltaY" value="4.0"/>
+      <arg name="deltaZ" value="2.0"/>
+      <arg name="X" value="3.0"/>
+      <!-- plane fitter param -->
+      <arg name="plan_fitter/iters" value="1000"/>
+      <arg name="plan_fitter/sigma" value="0.05"/>
+      <arg name="plan_fitter/p" value="0.99"/>
+  </include>
 
 </launch>

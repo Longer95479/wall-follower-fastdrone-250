@@ -84,10 +84,14 @@ private:
     bool have_odom_, is_next_waypoint_initialized_;
     double dist_from_wall_;
     int have_plane_threshold_;
+    double reach_waypoint_threshold_;
+    int max_planned_waypoints_num_;
+    bool wall_follower_enable_;
 
     /* data */
     Eigen::Vector3d body_pos_, next_way_point_;
     Eigen::Matrix3d body_r_m_;
+    int planned_waypoints_count_;
 
     void ptsEndFovGeneration();
     PlaneFitter::Plane planeFitting();

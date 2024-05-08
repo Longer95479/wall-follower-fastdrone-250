@@ -27,6 +27,10 @@ include_directories(
 )
 
 add_executable (hallway_map src/hallway_map.cpp )
+add_executable (pcd_map src/map_from_pcd.cpp )
 target_link_libraries(hallway_map
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES})
+target_link_libraries(pcd_map
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES})
