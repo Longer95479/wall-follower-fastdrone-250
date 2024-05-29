@@ -104,7 +104,7 @@ void GridMap::initMap(ros::NodeHandle &nh)
       "/vins_fusion/extrinsic", 10, &GridMap::extrinsicCallback, this); //sub
 
   if (mp_.pose_type_ == POSE_STAMPED)
-  {
+  {//默认pose_type为1
     pose_sub_.reset(
         new message_filters::Subscriber<geometry_msgs::PoseStamped>(node_, "grid_map/pose", 25));
 
@@ -113,7 +113,7 @@ void GridMap::initMap(ros::NodeHandle &nh)
     sync_image_pose_->registerCallback(boost::bind(&GridMap::depthPoseCallback, this, _1, _2));
   }
   else if (mp_.pose_type_ == ODOMETRY)
-  {
+  {//订阅里程计话题，还需要相机到imu的外参，从而将深度数据从相机系转到世界系
     odom_sub_.reset(new message_filters::Subscriber<nav_msgs::Odometry>(node_, "grid_map/odom", 100, ros::TransportHints().tcpNoDelay()));
 
     sync_image_odom_.reset(new message_filters::Synchronizer<SyncPolicyImageOdom>(
@@ -981,7 +981,7 @@ void GridMap::depthOdomCallback(const sensor_msgs::ImageConstPtr &img,
   body2world(1, 3) = odom->pose.pose.position.y;
   body2world(2, 3) = odom->pose.pose.position.z;
   body2world(3, 3) = 1.0;
-
+  //得到相机系到世界系的TF
   Eigen::Matrix4d cam_T = body2world * md_.cam2body_;
   md_.camera_pos_(0) = cam_T(0, 3);
   md_.camera_pos_(1) = cam_T(1, 3);

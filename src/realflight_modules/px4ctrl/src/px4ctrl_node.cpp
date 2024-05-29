@@ -7,7 +7,10 @@ void mySigintHandler(int sig)
     ROS_INFO("[PX4Ctrl] exit...");
     ros::shutdown();
 }
-
+void test_cbk(nav_msgs::OdometryConstPtr pMsg)
+{
+    return;
+}
 int main(int argc, char *argv[])
 {
     ros::init(argc, argv, "px4ctrl");
@@ -84,6 +87,9 @@ int main(int argc, char *argv[])
     fsm.set_FCU_mode_srv = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
     fsm.arming_client_srv = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
     fsm.reboot_FCU_srv = nh.serviceClient<mavros_msgs::CommandLong>("/mavros/cmd/command");
+    //add by bk
+    ros::Subscriber emergency_sub = nh.subscribe<std_msgs::Bool>("/planning/Emergency_hover",1, boost::bind(&PX4CtrlFSM::emergency_callback, &fsm, _1));
+    ros::Subscriber test_sub = nh.subscribe<nav_msgs::Odometry>("/bkbkb/odom", 1, &test_cbk);
 
     ros::Duration(0.5).sleep();
 
